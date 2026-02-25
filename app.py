@@ -94,6 +94,15 @@ rows = fetch_latest(50)
 if rows:
     df = pd.DataFrame(rows)
     st.dataframe(df, use_container_width=True)
+
+    # Plot the graph based on total order amount by payment method
+    st.subheader("📊 Total Sales by Payment Method")
+
+    # Group the data by payment method and sum the total_amount_usd
+    sales_by_payment_method = df.groupby("payment_method")["total_amount_usd"].sum().reset_index()
+
+    # Plot the bar chart
+    st.bar_chart(sales_by_payment_method.set_index("payment_method"))
 else:
     st.info("No orders yet.")
 
