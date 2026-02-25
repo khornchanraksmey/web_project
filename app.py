@@ -94,25 +94,25 @@ rows = fetch_latest(50)
 # Check if there are rows in the fetched data
 if rows:
     df = pd.DataFrame(rows)
+    
+    # Display the raw data table
     st.dataframe(df, use_container_width=True)
 
-    # Plot Revenue by Day
-    st.subheader("📊 Revenue by Day (from latest 200 orders)")
+    # --- Section: Total Sales by Payment Method ---
+    st.subheader("📊 Total Sales by Payment Method")
 
-    # Group the data by order_date and sum the total_amount_usd
-    revenue_by_day = df.groupby("order_date")["total_amount_usd"].sum().reset_index()
+    # Grouping by 'payment_method' and summing 'total_amount'
+    # Note: Ensure these column names match your database exactly
+    sales_by_payment = df.groupby("payment_method")["total_amount"].sum()
 
-    # Plot the line chart for revenue
-    st.line_chart(revenue_by_day.set_index("order_date"))
+    # Streamlit bar chart
+    st.bar_chart(sales_by_payment)
 
-    # Plot Orders by Day
-    st.subheader("📊 Orders by Day (from latest 200 orders)")
+    # --- Section: Sales by Category (Bonus) ---
+    st.subheader("☕ Sales by Category")
+    sales_by_category = df.groupby("category")["total_amount"].sum()
+    st.bar_chart(sales_by_category)
 
-    # Group the data by order_date and count the number of orders
-    orders_by_day = df.groupby("order_date").size().reset_index(name="order_count")
-
-    # Plot the bar chart for orders count
-    st.bar_chart(orders_by_day.set_index("order_date"))
 else:
     st.info("No orders yet.")
 
