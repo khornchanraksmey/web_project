@@ -90,28 +90,48 @@ if submitted:
 st.divider()
 st.subheader("📄 Latest Orders")
 
-rows = fetch_latest(50)
+rows = fetch_latest(200)
 # Check if there are rows in the fetched data
 if rows:
     df = pd.DataFrame(rows)
     
-    # Display the raw data table
+    # Ensure order_date is a datetime object for grouping
+    df['order_date'] = pd.to_datetime(df['order_date'])
+
+    # Create two columns for the charts as seen in the photo
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.write("### Revenue by day (from latest 200 orders)")
+        # Sum total_amount by date
+        revenue_by_day = df.groupby(df['order_date'].dt.strftime('%a %d'))['total_amount'].sum()
+        st.line_chart(revenue_by_day)
+
+    with col2:
+        st.write("### Orders by day (from latest 200 orders)")
+        # Count number of orders by date
+        orders_by_day = df.groupby(df['order_date'].dt.strftime('%a %d')).size()
+        st.bar_chart(orders_by_day)
+
+    # Display the raw data table below the charts
     st.dataframe(df, use_container_width=True)
 
-    # --- Section: Total Sales by Payment Method ---
-    st.subheader("📊 Total Sales by Payment Method")
+    # --- Payment & Category Section ---
+    st.divider()
+    c3, c4 = st.columns(2)
+    
+    with c3:
+        st.subheader("📊 Total Sales by Payment Method")
+        sales_by_payment = df.groupby("payment_method")["total_amount"].sum()
+        st.bar_chart(sales_by_payment)
 
-    # Grouping by 'payment_method' and summing 'total_amount'
-    # Note: Ensure these column names match your database exactly
-    sales_by_payment = df.groupby("payment_method")["total_amount"].sum()
-
-    # Streamlit bar chart
-    st.bar_chart(sales_by_payment)
-
-    # --- Section: Sales by Category (Bonus) ---
-    st.subheader("☕ Sales by Category")
-    sales_by_category = df.groupby("category")["total_amount"].sum()
-    st.bar_chart(sales_by_category)
+    with c4:
+        st.subheader("☕ Sales by Category")
+        if "category" in df.columns:
+            sales_by_category = df.groupby("category")["total_amount"].sum()
+            st.bar_chart(sales_by_category)
+        else:
+            st.info("Add a 'category' field to see category sales.")
 
 else:
     st.info("No orders yet.")
