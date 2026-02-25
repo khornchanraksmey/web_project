@@ -91,18 +91,28 @@ st.divider()
 st.subheader("📄 Latest Orders")
 
 rows = fetch_latest(50)
+# Check if there are rows in the fetched data
 if rows:
     df = pd.DataFrame(rows)
     st.dataframe(df, use_container_width=True)
 
-    # Plot the graph based on total order amount by payment method
-    st.subheader("📊 Total Sales by Payment Method")
+    # Plot Revenue by Day
+    st.subheader("📊 Revenue by Day (from latest 200 orders)")
 
-    # Group the data by payment method and sum the total_amount_usd
-    sales_by_payment_method = df.groupby("payment_method")["total_amount_usd"].sum().reset_index()
+    # Group the data by order_date and sum the total_amount_usd
+    revenue_by_day = df.groupby("order_date")["total_amount_usd"].sum().reset_index()
 
-    # Plot the bar chart
-    st.bar_chart(sales_by_payment_method.set_index("payment_method"))
+    # Plot the line chart for revenue
+    st.line_chart(revenue_by_day.set_index("order_date"))
+
+    # Plot Orders by Day
+    st.subheader("📊 Orders by Day (from latest 200 orders)")
+
+    # Group the data by order_date and count the number of orders
+    orders_by_day = df.groupby("order_date").size().reset_index(name="order_count")
+
+    # Plot the bar chart for orders count
+    st.bar_chart(orders_by_day.set_index("order_date"))
 else:
     st.info("No orders yet.")
 
